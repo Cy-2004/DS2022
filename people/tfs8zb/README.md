@@ -1,6 +1,6 @@
 # Jimmy Brown
 
-![/Downloads/Random/jb_greek_headshot.jpeg](jb_greek_headshot.jpeg)
+![Path to an image](my_photo.jpg)
 
 - Hometown: Aldie, VA
 - Hobbies: Soccer, Running
