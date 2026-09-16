@@ -1,6 +1,6 @@
 # Owen Walton
 
-![Path to an image]("C:\Users\owenw\DS2022-Lab2-Repo\people\csb5tg\WIN_20260915_19_28_30_Pro.jpg")
+![Path to an image]("people\csb5tg\WIN_20260915_19_28_30_Pro.jpg")
 
 - Hometown: Goochland, VA 
 - Hobbies: Golf, Fishing, Hunting, Working Out
