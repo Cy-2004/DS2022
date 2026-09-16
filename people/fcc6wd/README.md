@@ -1,6 +1,6 @@
 Jian Wang
 
-![/home/andyw/DS2022/people/fcc6wd](myphoto.jpg)
+![/home/andyw/DS2022/people/fcc6wd](MyPhoto.jpg)
 
 - Hometown: Beijing, China
 - Hobbies: Mountain Bike
