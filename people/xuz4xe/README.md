@@ -1,6 +1,6 @@
 # Elliot Lam
 
-![](file:///C:/Users/User/Documents/Courses/DS2022/DS2022/people/xuz4xe/000073810035.jpg)
+![](000073810035.jpg)
 
 - Hometown: Falls Church City, VA
 - Hobbies: Baking
