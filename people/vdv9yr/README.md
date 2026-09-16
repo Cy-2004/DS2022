@@ -1,6 +1,6 @@
 # Willoughby Anderson
 
-![Go Hoos!](people/vdv9yr/DSphoto.png/)
+![Go Hoos!](DSphoto.png)
 
 
 - Hometown: Durango, Colorado
