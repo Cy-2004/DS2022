@@ -2,6 +2,14 @@
 
 This module covers Bash and Python scripting. In the lab you will be using the [uv](https://docs.astral.sh/uv/) package manager for isolated Python environments; the tutorial below prepares you for that.
 
+**Work through the following sections:**
+- [Setup](#setup)
+- [Managing Python environments with uv](#managing-python-environments-with-uv)
+- [Scripting best practices](#scripting-best-practices)
+- [Start Lab 03](https://github.com/ksiller/lab-03-scripting)
+
+> **Note:** Use [Scripting best practices](#scripting-best-practices) as a reference while you work through Lab 03.
+
 ## Setup
 
 For the Python examples in this module (and for [Lab 03](https://github.com/ksiller/lab-03-scripting)), you need **Python 3** and **[uv](https://docs.astral.sh/uv/)** on your computer.
@@ -68,11 +76,12 @@ Neither package lists the other as a dependency. Both need `protobuf`, but one r
 | `uv.lock` | Pins the exact versions `uv` resolved (what you got). Makes installs reproducible. |
 | `.python-version` | Records which Python version this project expects. |
 
-Typical workflow: 
-1. edit dependencies with `uv add` / `uv rm`. 
-2. That triggers `uv` to update `pyproject.toml` and `uv.lock`
-3. execute `uv sync` to (re)create or update `.venv` 
-4. run code with `uv run`.
+Typical workflow:
+
+1. Edit dependencies with `uv add` / `uv rm`.
+2. That updates `pyproject.toml` and `uv.lock`.
+3. Run `uv sync` to (re)create or update `.venv`.
+4. Run code with `uv run`.
 
 ### Hands-on: a tiny `uv` project
 
@@ -165,32 +174,40 @@ Both belong in Git. Together they let someone else recreate the same environment
 
 ### Using a `requirements.txt` with `uv`
 
-If you already have a classic requirements file:
+Many community Python projects come with a `requirements.txt`. This is an older yet still valid standard to define a list of needed Python packages. If you already have a classic requirements file you can still use it with `uv`:
 
 ```bash
 echo "requests>=2.31.0" > requirements.txt
+```
+This creates a `requirements.txt` file. Now let's use it with `uv`.
+
+```bash
 uv add -r requirements.txt
 ```
 
 That imports those packages into the `uv` project (`pyproject.toml` / `uv.lock`). You can still keep `requirements.txt` for documentation, but the source of truth for a `uv` project is `pyproject.toml` + `uv.lock`.
 
-To export a lock-compatible requirements-style list for tools that only understand that format:
+If another tool only knows how to install from a `requirements.txt` (and not from `uv.lock`), you can ask `uv` to write one that lists the same exact package versions currently locked for this project:
 
 ```bash
-uv export --no-dev -o requirements-locked.txt
+uv export -o requirements-locked.txt
 ```
 
-(Optional; Lab 03 focuses on `pyproject.toml` / `uv.lock`.)
+You do **not** need this for Lab 03. The lab (and this course) treat `pyproject.toml` + `uv.lock` as enough: someone else runs `uv sync` or `uv run` and gets the same environment. Use `uv export` only when you must hand a classic `requirements.txt` to a system that cannot use `uv`.
 
-### Advanced: one-off packages with `uv run --with`
+### Advanced: try a package once with `uv run --with`
 
-Sometimes you want a tool for a single command without adding it to the project:
+**Intention:** run a command that needs an extra package **today**, without making that package a permanent dependency of the project.
+
+`uv add` updates `pyproject.toml` and `uv.lock` and installs into `.venv`. That is what you want for libraries your project actually relies on. `--with` is for a temporary tryout: “borrow” a package for this one command only.
 
 ```bash
 uv run --with rich python -c "from rich import print; print('[bold green]hello[/]')"
 ```
 
-`rich` is available for that run; it is **not** added to `pyproject.toml` unless you later `uv add rich`. Handy for quick experiments; prefer `uv add` for real project dependencies.
+For that command, `uv` makes `rich` available so the import works. It does **not** add `rich` to `pyproject.toml` or `uv.lock`. The next plain `uv run python ...` will not have `rich` unless you `uv add rich`.
+
+Use `--with` for quick experiments. If you will keep using the package in this project, `uv add` it instead.
 
 ### Version control
 
@@ -327,7 +344,7 @@ fi
 
 ### Loops
 
-Start with for, define a do loop, end with done
+Start with `for`, put the body between `do` and `done`:
 
 ```bash
 names=("alice" "bob" "carol")
@@ -376,7 +393,7 @@ A common format for logging might be a snippet like this:
 ```
 # First establish the datetime:
 NOW=$(date +"%m-%d-%Y-%H:%M:%SEDT")
-echo $DATE " OK - Successfully processed " $FILENAME >> /var/log/output.log
+echo "$NOW OK - Successfully processed $FILENAME" >> /var/log/output.log
 ```
 The result would be a single file building with each row as it is logged.
 Note the `>>` to append to a file instead of overwriting it!
@@ -412,22 +429,17 @@ echo "Hello, $NAME! Welcome to bash scripting."
 
 ## Python3
 
-Scripting in `python` is fairly similar, but it has many a lot more functionality in 
-terms of libraries, classes, functions, etc. A few things to note:
+Scripting in Python is similar in spirit to bash, but Python offers more built-in structure (libraries, classes, functions). A few things to note:
 
-- Unlike `bash` it is not as easy to pass `$1`, `$2` parameters in the command-line.
-[Refer to this](https://stackabuse.com/command-line-arguments-in-python/) for a basic tutorial.
+- Unlike bash, command-line arguments are not automatic `$1`, `$2` variables. See the [Python tutorial on command-line arguments](https://docs.python.org/3/tutorial/stdlib.html#command-line-arguments), or this [Stack Abuse walkthrough](https://stackabuse.com/command-line-arguments-in-python/).
 - Python can invoke shell scripts in other languages.
-- Python has many better options for conditional logic, error handling, and logging.
-- Whereas `bash` and other low-level tools (`grep`, `sed`, `awk`, `tr`, `perl`, etc.) can parse 
-plain-text "flat" files fairly efficiently, Python can ingest a data file and load it 
-into memory for much more complex transformations. A library like `pandas` can use 
-dataframes like a staging database for you to query, scan, count, etc. [Here's a great
-tutorial](https://www.kaggle.com/sohier/tutorial-accessing-data-with-pandas) on Kaggle.
+- Python has many options for conditional logic, error handling, and logging.
+- Whereas bash and other low-level tools (`grep`, `sed`, `awk`, `tr`, `perl`, etc.) can parse plain-text "flat" files fairly efficiently, Python can load a data file into memory for more complex transformations. A library like `pandas` can use dataframes like a staging table you query and reshape. Start with the official [pandas getting started](https://pandas.pydata.org/docs/getting_started/index.html) guide.
 
->**Note:** Review [coding best practices](../../best-practices.md).
+> **Note:** Also review the course [coding best practices](../../best-practices.md).
 
 ## Resources
 
-[[Watch] Bash Scripting Tutorial](https://www.youtube.com/watch?v=tK9Oc6AEnR4)
-[Linux Config: Bash Scripting Tutorial](https://linuxconfig.org/bash-scripting-tutorial)
+- [Bash Scripting Tutorial (video)](https://www.youtube.com/watch?v=tK9Oc6AEnR4)
+- [Bash Guide for Beginners (TLDP)](https://tldp.org/LDP/Bash-Beginners-Guide/html/)
+- [uv documentation](https://docs.astral.sh/uv/)
