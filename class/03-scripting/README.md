@@ -6,8 +6,8 @@ This module covers Bash and Python scripting. In the lab you will be using the [
 
 - [Setup](#setup)
 - [Managing Python environments with uv](#managing-python-environments-with-uv)
-- [Scripting best practices](#scripting-best-practices)
-- [Start Lab 03](https://github.com/ksiller/lab-03-scripting)
+- [Start Lab 03](https://github.com/ksiller/lab-03-scripting), use [Scripting best practices](#scripting-best-practices) as a reference as needed.
+
 
 > **Note:** Use [Scripting best practices](#scripting-best-practices) as a reference while you work through Lab 03.
 
@@ -538,5 +538,4 @@ Scripting in Python is similar in spirit to bash, but Python offers more built-i
 - [Bash Scripting Tutorial (video)](https://www.youtube.com/watch?v=tK9Oc6AEnR4)
 - [Bash Guide for Beginners (TLDP)](https://tldp.org/LDP/Bash-Beginners-Guide/html/)
 - [uv documentation](https://docs.astral.sh/uv/)
-- [Lab 03: Scripting](https://github.com/ksiller/lab-03-scripting)
 
