@@ -1,6 +1,6 @@
 # Gaayathri Mathuria
 
-![Me at Banff (favorite trip ever)!](bow_lake1.jpg)
+![Me at Banff (favorite trip ever)!](bow_lake1.JPG)
 
 - Hometown: Fairfax, Virginia
 - Hobbies: Dance, hiking, reading, travel
