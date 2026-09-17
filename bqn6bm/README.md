@@ -1,9 +1,11 @@
-Hometown: Hagen, Germany
+# Ryan Yeddanapalli
 
-Hobbies: trail running, reading
+- Hometown: Ashburn, Virginia
 
-First Computer I Ever Saw: My dad bought a Commodore C64 in the early 80s. It had a 5.24" floppy disk drive for storage, no internal hard drive. A special perk was the color monitor, which was not that common at the time.
+- Hobbies: Playing chess and playing tennis
 
-About me: I joined the SDS faculty in the summer of 2025 and have been teaching systems and data project classes. My research interest is focused on development of flexible and reproducible image analysis pipelines that scale from laptops to high performance computing and cloud systems.
+- First computer I ever saw: A Dell tower my dad had in my family's computer room. I would always play with the automatic cd tray making it go in and out. 
+
+- About me: I have always been into data and data analytics. When watching sports my favorite part is watching the analytics and seeing who is the best at each specific data point. I am excited to create many data science projects at the School of Data Science.
 
 
