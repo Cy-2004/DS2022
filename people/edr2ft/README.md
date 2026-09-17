@@ -1,4 +1,4 @@
-# Your Name
+# Xinhao Wang
 
 ![Path to an image](myphoto.jpg)
 
