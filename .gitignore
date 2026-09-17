@@ -1,3 +1,17 @@
+# Course materials: folder shells on GitHub, contents stay local
+class/bundles/
+class/s3-storage/
+!class/README.md
+labs/*
+!labs/README.md
+projects/*
+!projects/README.md
+images/labs/
+
+people/nem2p/
+
+.DS_Store
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
