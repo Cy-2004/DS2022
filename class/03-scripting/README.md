@@ -3,12 +3,15 @@
 This module covers Bash and Python scripting. In the lab you will be using the [uv](https://docs.astral.sh/uv/) package manager for isolated Python environments; the tutorial below prepares you for that.
 
 **Work through the following sections:**
+
 - [Setup](#setup)
 - [Managing Python environments with uv](#managing-python-environments-with-uv)
 - [Scripting best practices](#scripting-best-practices)
 - [Start Lab 03](https://github.com/ksiller/lab-03-scripting)
 
 > **Note:** Use [Scripting best practices](#scripting-best-practices) as a reference while you work through Lab 03.
+
+
 
 ## Setup
 
@@ -40,14 +43,16 @@ Work in `~/ds2022-fall-26` for the hands-on steps below. Do **not** nest a new G
 
 ## Managing Python environments with `uv`
 
+
+
 ### Why isolate environments?
 
 Different projects often need different versions of the same package (library). Historically, the `pip install` command has been widely used to install Python packages. The problem is that one global `pip install` cannot satisfy every project at once.
 
 Here is a realistic clash between **two packages that do not depend on each other**, but that both require the shared library `protobuf` with **non-overlapping** version ranges:
 
-- **`dbt-core`** — runs analytics transformations (dbt models) against a data warehouse.
-- **`google-cloud-pubsub`** — publish and subscribe to messages on Google Cloud Pub/Sub.
+- `dbt-core` — runs analytics transformations (dbt models) against a data warehouse.
+- `google-cloud-pubsub` — publishes and subscribes to messages on Google Cloud Pub/Sub.
 
 **Try this conflict** (it should fail — that is the point):
 
@@ -69,12 +74,14 @@ Neither package lists the other as a dependency. Both need `protobuf`, but one r
 
 ### Core ideas
 
-| Piece | Role |
-| --- | --- |
-| `.venv/` | Local virtual environment (installed packages live here). **Do not commit it.** |
-| `pyproject.toml` | Declares your project and its dependencies (what you want). |
-| `uv.lock` | Pins the exact versions `uv` resolved (what you got). Makes installs reproducible. |
-| `.python-version` | Records which Python version this project expects. |
+
+| Piece             | Role                                                                               |
+| ----------------- | ---------------------------------------------------------------------------------- |
+| `.venv/`          | Local virtual environment (installed packages live here). **Do not commit it.**    |
+| `pyproject.toml`  | Declares your project and its dependencies (what you want).                        |
+| `uv.lock`         | Pins the exact versions `uv` resolved (what you got). Makes installs reproducible. |
+| `.python-version` | Records which Python version this project expects.                                 |
+
 
 Typical workflow:
 
@@ -83,22 +90,22 @@ Typical workflow:
 3. Run `uv sync` to (re)create or update `.venv`.
 4. Run code with `uv run`.
 
+
+
 ### Hands-on: a tiny `uv` project
 
-Create a practice folder:
+Create a practice folder and a first project inside it:
 
 ```bash
 mkdir -p ~/ds2022-fall-26/uv-practice
 cd ~/ds2022-fall-26/uv-practice
+uv init project-1 --name project-1 --description "Practice project for uv"
+cd project-1
 ```
 
-#### 1. `uv init`
 
-```bash
-uv init --name hello-uv --description "Practice project for uv"
-```
 
-Inspect what appeared:
+#### 1. Inspect what `uv init` created
 
 ```bash
 ls -la
@@ -106,26 +113,32 @@ cat pyproject.toml
 cat .python-version
 ```
 
-You should see `pyproject.toml`, `.python-version`, and usually a small starter layout. Open the `pyproject.toml` file and notice that the `dependencies` entry starts empty.
+You should see `pyproject.toml`, `.python-version`, and usually a small starter layout. Open `pyproject.toml` and notice that `dependencies` starts empty.
 
 #### 2. `uv add`
 
-Let's add a package.
+Add a single package:
+
 ```bash
 uv add requests
 ```
 
 Check:
 
-- `pyproject.toml` — `requests` is listed under dependencies
-- `uv.lock` — exact version (and transitive deps) are pinned
+- `pyproject.toml` — `requests` is listed under `dependencies`
+- `uv.lock` — the exact version (and its dependencies) are pinned
 - `.venv/` — packages were installed into an isolated environment
 
 ```bash
 ls .venv
-grep -A2 dependencies pyproject.toml # or open pyproject.toml file in editor
+grep -A5 '^dependencies' pyproject.toml   # or open pyproject.toml in an editor
 ```
 
+```bash
+uv tree
+```
+
+This shows the hierarchy of package dependencies in your current project.
 #### 3. `uv run`
 
 Run Python **through** the project environment (no need to `source .venv/bin/activate` first):
@@ -140,6 +153,8 @@ Or start an interactive shell in that environment:
 uv run python
 ```
 
+
+
 #### 4. `uv rm`
 
 ```bash
@@ -147,13 +162,15 @@ uv rm requests
 uv run python -c "import requests"
 ```
 
-The last command should fail: `requests` is gone from the project env. `pyproject.toml` and `uv.lock` were updated for you.
+The last command should fail: `requests` is gone from the project environment. `pyproject.toml` and `uv.lock` were updated for you.
 
-Add it back for the next steps:
+Add it back:
 
 ```bash
 uv add requests
 ```
+
+
 
 #### 5. `uv sync`
 
@@ -163,37 +180,87 @@ uv add requests
 uv sync
 ```
 
-On a fresh machine (or HPC), you typically clone the repo, then `uv sync` or `uv run ...` (which can sync as needed) — you do **not** copy `.venv` between computers.
+On a fresh machine (or HPC), you typically clone the repo, then run `uv sync` or `uv run ...` (which can sync as needed). Do **not** copy `.venv` between computers.
 
 #### 6. Relationship: `pyproject.toml` and `uv.lock`
 
-- **`pyproject.toml`** — human-oriented declaration (`requests` without spelling every sub-dependency).
-- **`uv.lock`** — machine-oriented snapshot of the full resolved tree.
+- `pyproject.toml` — human-oriented declaration (`requests`, without listing every sub-dependency).
+- `uv.lock` — machine-oriented snapshot of the full resolved dependency tree.
 
 Both belong in Git. Together they let someone else recreate the same environment with `uv sync`.
 
 ### Using a `requirements.txt` with `uv`
 
-Many community Python projects come with a `requirements.txt`. This is an older yet still valid standard to define a list of needed Python packages. If you already have a classic requirements file you can still use it with `uv`:
+Many community Python projects still ship a `requirements.txt`. That older format lists needed packages one per line. You can import it into a `uv` project:
 
 ```bash
 echo "requests>=2.31.0" > requirements.txt
-```
-This creates a `requirements.txt` file. Now let's use it with `uv`.
-
-```bash
 uv add -r requirements.txt
 ```
 
-That imports those packages into the `uv` project (`pyproject.toml` / `uv.lock`). You can still keep `requirements.txt` for documentation, but the source of truth for a `uv` project is `pyproject.toml` + `uv.lock`.
+That adds those packages to `pyproject.toml` / `uv.lock`. You may keep `requirements.txt` for documentation, but for a `uv` project the source of truth is `pyproject.toml` + `uv.lock`.
 
-If another tool only knows how to install from a `requirements.txt` (and not from `uv.lock`), you can ask `uv` to write one that lists the same exact package versions currently locked for this project:
+If another tool only knows how to install from a `requirements.txt` (and not from `uv.lock`), you can ask `uv` to write one that lists the exact versions currently locked for this project:
 
 ```bash
 uv export -o requirements-locked.txt
 ```
 
 You do **not** need this for Lab 03. The lab (and this course) treat `pyproject.toml` + `uv.lock` as enough: someone else runs `uv sync` or `uv run` and gets the same environment. Use `uv export` only when you must hand a classic `requirements.txt` to a system that cannot use `uv`.
+
+### Setting up separate projects
+
+The conflict example earlier showed that `dbt-core==1.7.14` and `google-cloud-pubsub==2.40.0` cannot be installed in one environment. Put each in its own project instead.
+
+Your first project is already at `~/ds2022-fall-26/uv-practice/project-1`. From there:
+
+```bash
+cd ~/ds2022-fall-26/uv-practice/project-1
+uv add dbt-core==1.7.14
+uv run python -c "import dbt; print('dbt-core is importable')"
+```
+
+Create a second project and install the other package:
+
+```bash
+cd ~/ds2022-fall-26/uv-practice
+uv init project-2 --name project-2 --description "Google Cloud practice project"
+cd project-2
+uv add google-cloud-pubsub==2.40.0
+```
+
+Typical layout:
+
+```text
+~/ds2022-fall-26/uv-practice/
+|-- project-1/
+|   |-- pyproject.toml      # includes dbt-core==1.7.14
+|   |-- uv.lock
+|   |-- .python-version
+|   `-- .venv/
+`-- project-2/
+    |-- pyproject.toml      # includes google-cloud-pubsub==2.40.0
+    |-- uv.lock
+    |-- .python-version
+    `-- .venv/
+```
+
+In `project-2`, Pub/Sub imports work; `dbt` does not (it was never installed here):
+
+```bash
+uv run python -c "from google.cloud import pubsub_v1; print('pubsub ok')"
+uv run python -c "import dbt"
+```
+
+The second command should fail. Switch back to `project-1` and the opposite is true:
+
+```bash
+cd ../project-1
+uv run python -c "import dbt; print('dbt ok')"
+uv run python -c "from google.cloud import pubsub_v1"
+```
+
+Each project has its own `.venv`, so the packages no longer fight over `protobuf`.
 
 ### Advanced: try a package once with `uv run --with`
 
@@ -227,11 +294,13 @@ Use `--with` for quick experiments. If you will keep using the package in this p
 - `uv.lock` (let `uv add`, `uv rm`, and `uv sync` maintain it)
 - Prefer changing dependencies with `uv add` / `uv rm` instead of hand-editing `pyproject.toml` dependency lists (avoids lockfile drift)
 
-Quick `.gitignore` line:
+Quick `.gitignore` line (run in each project directory):
 
 ```bash
 echo ".venv/" >> .gitignore
 ```
+
+
 
 ## Scripting Best Practices
 
@@ -245,13 +314,20 @@ All scripts should adhere to [coding best practices](../../best-practices.md). S
 6. Logging
 7. Use comments
 
+
+
 ## bash
 
+
+
 ### shebang
+
 A well-formatted `bash` script begins with a "shebang" line:
+
 ```
 #!/bin/bash
 ```
+
 that points to the full path of the `bash` shell. This may differ from one environment
 to the next.
 
@@ -264,13 +340,18 @@ paths. This is to avoid any ambiguity and preempt any errors of a shell not bein
 able to find the command.
 
 For example, when invoking the `aws` command-line in a script you would normally call
+
 ```
 /usr/local/bin/aws
 ```
+
 To determine the full path of an executable in a given system, use the `which` command:
+
 ```
 which aws
 ```
+
+
 
 ### Graceful Errors
 
@@ -296,8 +377,7 @@ Another option is a conditional so that when a specific line fails, the script `
 
 ### Sleep
 
-If you need a deliberate pause in the middle of a script, simply `sleep 5` for a 5-second
-pause, etc. This may be especially useful in the midst of `try` logic.
+If you need a deliberate pause in the middle of a script, use `sleep 5` for a 5-second pause (change the number as needed). This can help when waiting for a service or file to become ready.
 
 ### Input parameters
 
@@ -306,10 +386,10 @@ arguments when invoking from the command-line:
 
 - `$0` is the invoking script itself
 - `$1` is the first parameter after the script name
-- `$2` is the second parameter ...
-- . . .
+- `$2` is the second parameter, and so on.
 
 `positional-args.sh`
+
 ```
 #!/bin/bash
 
@@ -317,6 +397,7 @@ echo "$0 <-- invoking script"
 echo "$1 <-- first parameter"
 echo "$2 <-- second parameter"
 ```
+
 returns the following output:
 
 ```
@@ -326,6 +407,7 @@ $ ./positional-args.sh bananas blueberries
 bananas <-- first parameter
 blueberries <-- second parameter
 ```
+
 
 
 ### If/Else conditional logic
@@ -342,6 +424,8 @@ else
 fi
 ```
 
+
+
 ### Loops
 
 Start with `for`, put the body between `do` and `done`:
@@ -353,12 +437,15 @@ for name in "${names[@]}"; do
 done
 ```
 
+
+
 ### Environment
 
 `env` gives you all environment variables for your session. This may vary
 for an unattended script (without you around).
 
 Add environment variables in `bash`:
+
 ```
 export VARIABLE=value-of-variable
 ```
@@ -374,14 +461,16 @@ run without you around.
 VAR=$(command_to_execute)
 ```
 
-Example
+Example:
+
 ```bash
 TODAY=$(date)
-echo $TODAY
+echo "$TODAY"
 ```
-Executes the date command and stores its output in a variable TODAY. Then echo the content of $TODAY to the terminal.
 
-You are not restricted to a single command. You can also insert a pipeline of commands inside $( ).
+This runs `date`, stores the output in `TODAY`, then prints it.
+
+You are not limited to a single command. You can also put a pipeline inside `$( )`.
 
 ### Logging
 
@@ -395,6 +484,7 @@ A common format for logging might be a snippet like this:
 NOW=$(date +"%m-%d-%Y-%H:%M:%SEDT")
 echo "$NOW OK - Successfully processed $FILENAME" >> /var/log/output.log
 ```
+
 The result would be a single file building with each row as it is logged.
 Note the `>>` to append to a file instead of overwriting it!
 
@@ -406,6 +496,7 @@ choice has been made. This will be invaluable to you, when you come back to the 
 two years later, or when your code is shared with others.
 
 Comments start with a `#`; all characters following the `#` on that line are ignored. Here's an example demonstrating good commenting practice:
+
 ```bash
 #!/bin/bash
 # This script greets a user by name
@@ -427,6 +518,8 @@ NAME=$1
 echo "Hello, $NAME! Welcome to bash scripting."
 ```
 
+
+
 ## Python3
 
 Scripting in Python is similar in spirit to bash, but Python offers more built-in structure (libraries, classes, functions). A few things to note:
@@ -438,8 +531,12 @@ Scripting in Python is similar in spirit to bash, but Python offers more built-i
 
 > **Note:** Also review the course [coding best practices](../../best-practices.md).
 
+
+
 ## Resources
 
 - [Bash Scripting Tutorial (video)](https://www.youtube.com/watch?v=tK9Oc6AEnR4)
 - [Bash Guide for Beginners (TLDP)](https://tldp.org/LDP/Bash-Beginners-Guide/html/)
 - [uv documentation](https://docs.astral.sh/uv/)
+- [Lab 03: Scripting](https://github.com/ksiller/lab-03-scripting)
+
